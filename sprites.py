@@ -60,10 +60,18 @@ class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((w, h))
-        self.image.fill(GREEN)
+        self.image.fill(GRAY)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+        self.tile_image = pg.image.load("Sprites/Ground/GrassMid.png")
+        self.tile_rect = self.tile_image.get_rect()
+        self.tile_image = pg.transform.scale(self.tile_image, (int(self.tile_image.get_rect().width*0.25), int(self.tile_image.get_rect().height*0.25)))
+        self.tile_rect = self.tile_image.get_rect()
+
+        for x in range(0, self.rect.width, self.tile_rect.width):
+            self.image.blit(self.tile_image, (x, 0))
 
 # 플레이어의 움직임을 식으로 변환해 저장할 수 있게 도와주고, 저장한 움직임을 시각적으로 볼 수 있게 해준다.
 class PlayerSimulation(pg.sprite.Sprite):
