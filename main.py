@@ -7,7 +7,10 @@ class Game:
     def __init__(self):
         # initialize game wiindow, etc
         pg.init()
-        pg.mixer.init()
+        pg.mixer.init(buffer=16)
+        pg.mixer.quit()
+        pg.mixer.init(buffer=16)    # 효과음 지연 오류 때문에 다시 불러옴
+
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()

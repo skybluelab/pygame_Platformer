@@ -22,6 +22,9 @@ class Player(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (self.pos.x, self.pos.y)
 
+        #sounds
+        self.jump_sound = pg.mixer.Sound("Audio/jump.wav")
+
     def update(self):
         self.acc = vec(0, PLAYER_GRAVITY)
         keys = pg.key.get_pressed()
@@ -55,6 +58,8 @@ class Player(pg.sprite.Sprite):
             self.rect.y -= 1
             if hits:
                 self.vel.y = -PLAYER_JUMPPOWER
+                pg.mixer.Sound.stop(self.jump_sound)
+                pg.mixer.Sound.play(self.jump_sound)
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):
