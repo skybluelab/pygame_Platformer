@@ -1,3 +1,4 @@
+# 최유민 테스트 주석
 import pygame as pg
 import random
 from settings import *
