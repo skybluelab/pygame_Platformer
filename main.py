@@ -56,7 +56,7 @@ class Game:
         e = Blade((300, 420))
         self.all_sprites.add(e)
         self.enemies.add(e)
-        e = Laser((WIDTH/2, HEIGHT/2), 135, 0)
+        e = Laser((WIDTH/2, HEIGHT/2), 135, 220)
         self.all_sprites.add(e)
         self.enemies.add(e)
 
