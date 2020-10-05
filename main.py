@@ -1,8 +1,9 @@
-# 최유민 테스트 주석
 import pygame as pg
 import random
 from settings import *
 from sprites import *
+from enemies import *
+from particles import *
 
 class Game:
     def __init__(self):
@@ -17,11 +18,17 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
 
+        # user events
+        self.DEAD = pg.USEREVENT
+
+        # sounds
+        self.death_sound = pg.mixer.Sound("Audio/die.wav")
+
     def new(self):
         # start a new game
         self.all_sprites = pg.sprite.Group()
-
         self.platforms = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
 
         self.player = Player(self)
         self.all_sprites.add(self.player)
@@ -44,6 +51,15 @@ class Game:
             p = Platform(*plat)
             self.all_sprites.add(p)
             self.platforms.add(p)
+
+        #test Enemy
+        e = Blade((300, 420))
+        self.all_sprites.add(e)
+        self.enemies.add(e)
+        e = Laser((WIDTH/2, HEIGHT/2), 135, 0)
+        self.all_sprites.add(e)
+        self.enemies.add(e)
+
         self.run()
 
     def run(self):
@@ -67,18 +83,17 @@ class Game:
                         self.player.pos.y = hit.rect.top - self.player.rect.height*0.5
                         self.player.rect.center = self.player.pos
                         self.player.vel.y = 0
-        """
-        # if player reaches top 1/4 of the screen
-        if self.player.rect.top <= HEIGHT/4:
-            self.player.pos.y += abs(self.player.vel.y)
-            for plat in self.platforms:
-                plat.rect.y += abs(self.player.vel.y)
-        # if player reaches top 3/4 of the screen
-        if self.player.rect.bottom >= HEIGHT*3/4:
-            self.player.pos.y -= abs(self.player.vel.y)
-            for plat in self.platforms:
-                plat.rect.y -= abs(self.player.vel.y)
-        """
+
+        # check if player hits enemy
+        hits_enemy = pg.sprite.spritecollide(self.player, list(filter(lambda e: e.activate, self.enemies)), False,
+                                             pg.sprite.collide_mask)
+        if hits_enemy:
+            for n in range(0, 30):
+                self.all_sprites.add(particle_deathPop(self.player))
+            pg.mixer.Sound.play(self.death_sound)
+            self.all_sprites.remove(self.player)
+            self.enemies = []
+            pg.time.set_timer(self.DEAD, 1200)
 
 
 
@@ -92,11 +107,14 @@ class Game:
                 self.running = False
             if event.type == pg.KEYDOWN:
                 pass
+            if event.type == self.DEAD:
+                self.playing = False
+                pg.time.set_timer(self.DEAD, 0)
 
     def draw(self):
         # Game Loop - draw
         self.screen.fill(BACKGROUND_COLOR)
-        self.all_sprites.draw(self.screen)
+        pg.sprite.Group(list(filter(lambda e: e.show, self.all_sprites))).draw(self.screen)
         pg.display.flip()
 
 g = Game()

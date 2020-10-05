@@ -21,9 +21,7 @@ class Player(pg.sprite.Sprite):
         #self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
         self.rect.center = (self.pos.x, self.pos.y)
-
-        #sounds
-        self.jump_sound = pg.mixer.Sound("Audio/jump.wav")
+        self.show = True
 
     def update(self):
         self.acc = vec(0, PLAYER_GRAVITY)
@@ -58,25 +56,16 @@ class Player(pg.sprite.Sprite):
             self.rect.y -= 1
             if hits:
                 self.vel.y = -PLAYER_JUMPPOWER
-                pg.mixer.Sound.stop(self.jump_sound)
-                pg.mixer.Sound.play(self.jump_sound)
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((w, h))
-        self.image.fill(GRAY)
+        self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-        self.tile_image = pg.image.load("Sprites/Ground/GrassMid.png")
-        self.tile_rect = self.tile_image.get_rect()
-        self.tile_image = pg.transform.scale(self.tile_image, (int(self.tile_image.get_rect().width*0.25), int(self.tile_image.get_rect().height*0.25)))
-        self.tile_rect = self.tile_image.get_rect()
-
-        for x in range(0, self.rect.width, self.tile_rect.width):
-            self.image.blit(self.tile_image, (x, 0))
+        self.show = True
 
 # 플레이어의 움직임을 식으로 변환해 저장할 수 있게 도와주고, 저장한 움직임을 시각적으로 볼 수 있게 해준다.
 class PlayerSimulation(pg.sprite.Sprite):
@@ -90,6 +79,7 @@ class PlayerSimulation(pg.sprite.Sprite):
         self.image = self.original_image
         self.rect = self.image.get_rect()
         self.rect.center = (self.pos.x, self.pos.y)
+        self.show = True
 
         # 움직임을 보여줄 때의 변수 (self.time: 시간, self.play: 재생 여부)
         self.time = 1
@@ -98,7 +88,7 @@ class PlayerSimulation(pg.sprite.Sprite):
         self.t = Symbol('t')
         # 모션(motion)의 형식: (가속도 튜플, 속도 튜플).
         # 가속도는 다음 모션이 발동할 시간이 되기 전까지 계속 가해지고, 속도는 발동 시간에 한번 더해진다.
-        # (바닥에 부딫히는 등)정지하고 싶다면, 'break'를 입력한다.  (예시: 바닥에 떨어져 y축 움직임을 0으로 만들고싶다면 속도 튜플을 (0, 'break')로 한다.)
+        # (바닥에 부딫히는 등)정지하고 싶다면, 'break'를 입력한다.  (예시: 바닥에 떨어져 y축 움직임을 0으로 만들고싶다면 속도 튜플을 (0, 'bkeak')로 한다.)
         self.time_list = []
         self.motion_list = []
         self.posFunc_list = []
@@ -247,3 +237,12 @@ class PlayerSimulation(pg.sprite.Sprite):
         if index == -1:
             return (0*self.t, 0*self.t)
         return self.posFunc_list[index]
+
+#장애물을 플레이어의 정해진 경로에 부딫히지 않도록 설치하는 클래스
+class EnemyGenerator:
+    def __init__(self):
+        pass
+    def generate_Blade(self):
+        pass
+    def generate_Laser(self):
+        pass
