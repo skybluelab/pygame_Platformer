@@ -30,6 +30,9 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
+        self.music = pg.mixer.music.load('Audio/music.wav')  #Bgm 추가
+        self.music = pg.mixer.music.play(-1)
+
         self.player = Player(self)
         self.all_sprites.add(self.player)
 
