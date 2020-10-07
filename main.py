@@ -59,6 +59,9 @@ class Game:
         e = Laser((WIDTH/2, HEIGHT/2), 135, 220)
         self.all_sprites.add(e)
         self.enemies.add(e)
+        e = Thorn((480,500))
+        self.all_sprites.add(e)
+        self.enemies.add(e)
 
         self.run()
 

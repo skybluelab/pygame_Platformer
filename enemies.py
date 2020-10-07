@@ -29,6 +29,28 @@ class Blade(pg.sprite.Sprite):
         if self.angle >= 360:
             self.angle = 0
 
+
+class Thorn(pg.sprite.Sprite):
+    def __init__(self , pos):
+        pg.sprite.Sprite.__init__(self)
+
+        self.pos = vec(pos[0],pos[1])
+        self.angle = 0
+        self.image = pg.image.load("Sprites/Enemies/Spike_Up.png")  #바꿀 예정(임시)
+        self.original_image = self.image
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.pos.x, self.pos.y)
+
+        self.show = True
+        self.activate = True
+
+    def update(self):
+        self.image = pg.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.pos.x, self.pos.y)
+
+
+
 class Laser(pg.sprite.Sprite):
     def __init__(self, pos, angle, t):
         pg.sprite.Sprite.__init__(self)
