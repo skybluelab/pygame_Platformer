@@ -36,17 +36,17 @@ class Game:
         self.player = Player(self)
         self.all_sprites.add(self.player)
 
-        self.playerSimulation = PlayerSimulation(self.player)
+        self.playerSimulation = PlayerSimulation((20, HEIGHT - 100), pg.rect.Rect(20, HEIGHT - 100, 32, 32))
         self.all_sprites.add(self.playerSimulation)
         self.playerSimulation.updateMotionScript(
-                                {0: ((0, PLAYER_GRAVITY), (0, 0)),
-                                 10.7: ((0, 0), (0, 'break')),
-                                 11: ((PLAYER_ACC, 0), (0, 0)),
-                                 120: ((0, 0), (0, 0)),
-                                 130: ((PLAYER_ACC, PLAYER_GRAVITY), (0, -PLAYER_JUMPPOWER)),
-                                 167.5: ((-PLAYER_ACC, 0), (0, 'break')),
-                                 200: ((PLAYER_ACC, 0), (0, 0)),
-                                 382: ((0, 0), (0, 0))})
+            {0: ((0, PLAYER_GRAVITY), (0, 0)),
+             10.7: ((0, 0), (0, 'break')),
+             11: ((0, 0), (PLAYER_VEL, 0)),
+             120: ((0, 0), ('break', 0)),
+             130: ((0, PLAYER_GRAVITY), (PLAYER_VEL, -PLAYER_JUMPPOWER)),
+             167.5: ((0, 0), (-PLAYER_VEL, 'break')),
+             200: ((0, 0), (PLAYER_VEL, 0)),
+             380: ((0, 0), ('break', 'break'))})
         self.playerSimulation.time = 0
         self.playerSimulation.play = True
 

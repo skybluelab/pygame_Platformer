@@ -28,12 +28,13 @@ class Player(pg.sprite.Sprite):
 
     def update(self):
         self.acc = vec(0, PLAYER_GRAVITY)
+        self.vel.x = 0
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT]:
-            self.acc.x = -PLAYER_ACC
+            self.acc.x = -PLAYER_VEL
             self.image = pg.transform.flip(self.original_image, True, False)
         if keys[pg.K_RIGHT]:
-            self.acc.x = PLAYER_ACC
+            self.acc.x = PLAYER_VEL
             self.image = self.original_image
         if keys[pg.K_SPACE] or keys[pg.K_UP]:
             self.jump()
@@ -42,7 +43,8 @@ class Player(pg.sprite.Sprite):
         self.acc.x += self.vel.x * PLAYER_FRICTION
         # equations of motion
         self.vel += self.acc
-        self.pos += self.vel - 0.5 * self.acc #-0.5*self.acc가 맞다. pos_t = 값을 더한 횟수에 맞게 하려면.
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y - 0.5 * self.acc.y #-0.5*self.acc가 맞다. pos_t = 값을 더한 횟수에 맞게 하려면.
         # wrap around the sides of the screen
         if self.pos.x > WIDTH:
             self.pos.x = 0
@@ -83,14 +85,14 @@ class Platform(pg.sprite.Sprite):
 # 플레이어의 움직임을 식으로 변환해 저장할 수 있게 도와주고, 저장한 움직임을 시각적으로 볼 수 있게 해준다.
 class PlayerSimulation(pg.sprite.Sprite):
     # 초기화할 때 플레이어 클래스를 전달해야 한다(모양, 초기 좌표를 같게 하기 위해).
-    def __init__(self, player):
+    def __init__(self, player_pos, rect):
         pg.sprite.Sprite.__init__(self)
-        self.player_pos = player.pos
-        self.pos = player.pos
-        self.original_image = player.image.copy()
+        self.player_pos = vec(player_pos[0], player_pos[1])
+        self.pos = self.player_pos
+        self.rect = rect
+        self.original_image = pg.Surface((rect.width, rect.height))
         self.original_image.fill(BLUE)
         self.image = self.original_image
-        self.rect = self.image.get_rect()
         self.rect.center = (self.pos.x, self.pos.y)
         self.show = True
 
@@ -98,7 +100,7 @@ class PlayerSimulation(pg.sprite.Sprite):
         self.time = 1
         self.play = False
 
-        self.t = Symbol('t')
+        self.t = Symbol('t', real=True)
         # 모션(motion)의 형식: (가속도 튜플, 속도 튜플).
         # 가속도는 다음 모션이 발동할 시간이 되기 전까지 계속 가해지고, 속도는 발동 시간에 한번 더해진다.
         # (바닥에 부딫히는 등)정지하고 싶다면, 'break'를 입력한다.  (예시: 바닥에 떨어져 y축 움직임을 0으로 만들고싶다면 속도 튜플을 (0, 'bkeak')로 한다.)
@@ -152,22 +154,27 @@ class PlayerSimulation(pg.sprite.Sprite):
         # 아니라면 속도를 time에 해당하는 속도 + motion의 속도로, 속도함수를 속도도 고려하여 정한다.
         if motion[1][0] == 'break':
             vel.x = 0
-            velFunc_x = (acc.x / PLAYER_FRICTION) * (
-                    1 + PLAYER_FRICTION) ** (self.t - time) - acc.x / PLAYER_FRICTION
+            velFunc_x = acc.x * (self.t - time)
         else:
-            vel.x = self.get_velocity(time).x + motion[1][0]
-            velFunc_x = (vel.x + acc.x / PLAYER_FRICTION) * (
+            vel.x = motion[1][0]
+            velFunc_x = 0*self.t + motion[1][0]
+
+            '''
+                (vel.x + acc.x / PLAYER_FRICTION) * (
                     1 + PLAYER_FRICTION) ** (self.t - time) - acc.x / PLAYER_FRICTION + motion[1][0]
+            '''
 
         if motion[1][1] == 'break':
             vel.y = 0
             velFunc_y = acc.y * (self.t - time)
         else:
             vel.y = self.get_velocity(time).y + motion[1][1]
-            velFunc_y = vel.y + acc.y * (self.t - time) + motion[1][1]
+            velFunc_y = vel.y + acc.y * (self.t - time)
 
         # 위치함수
-        x = pos.x + \
+        x = pos.x + vel.x*(self.t - time)
+        '''
+        pos.x + \
             ((vel.x + acc.x / PLAYER_FRICTION) * (1 + PLAYER_FRICTION) * (
                     (1 + PLAYER_FRICTION) ** (self.t - time) - 1) / PLAYER_FRICTION - acc.x * (
                      self.t - time) / PLAYER_FRICTION) - \
@@ -175,6 +182,7 @@ class PlayerSimulation(pg.sprite.Sprite):
                 (1 + PLAYER_FRICTION) ** ((self.t - time) - 1) - 1) / PLAYER_FRICTION -
                                      acc.x * ((self.t - time) - 1) / PLAYER_FRICTION) - \
             0.5 * acc.x * (self.t - time)
+            '''
         y = pos.y + \
             vel.y * (self.t - time) + 0.5 * acc.y * (self.t - time) ** 2
 
