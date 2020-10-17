@@ -261,9 +261,55 @@ class PlayerSimulation(pg.sprite.Sprite):
 
 #장애물을 플레이어의 정해진 경로에 부딫히지 않도록 설치하는 클래스
 class EnemyGenerator:
-    def __init__(self):
-        pass
+    def __init__(self, PlayerSimulation):
+        self.player = PlayerSimulation
+        self.t = PlayerSimulation.t
+
+    def minmax(self, func, arg):# 단변수 함수의 최대
+        dy = diff(func)
+        sol = solve(Eq(dy, 0), arg)
+        arr = [func.subs(arg, s) for s in sol]
+        if arr == []:
+            return ()
+        return (min(arr), max(arr))
+
     def generate_Blade(self):
         pass
+
     def generate_Laser(self):
-        pass
+        pos = vec(WIDTH/2, HEIGHT/2)
+        angle = 135
+        x, y = symbols("x y", real=True)
+        wh =  (10 / abs(math.sin(math.radians(angle))), 10 / abs(math.cos(math.radians(angle))))
+        E = Eq(y-pos.y, math.tan(math.radians(angle))*(x-pos.x)) # 장애물의 모양함수
+
+        collidingTime = self.get_collidingTimeRangeOfPlayer(E, wh, (x, y))
+
+
+
+
+
+    def get_collidingTimeRangeOfPlayer(self, enemy_movingShape, enemy_wh, enemy_symbol_xy):
+        x, y = enemy_symbol_xy
+        W, H = symbols("W H")
+        w1, h1 = self.player.rect.width, self.player.rect.height
+        w2, h2 = enemy_wh
+
+        player_time_list = self.player.time_list
+
+        t_range= []
+
+        E = enemy_movingShape # 장애물의 모양함수
+        for index in range(0, len(player_time_list) - 1):
+            time = player_time_list[index]
+            defined_time_range = (player_time_list[index], player_time_list[index + 1])
+            P = self.player.get_positionFunction(time)  # player의 좌표함수
+
+            for FX in [sol - P[0] - W for sol in solve(E.subs(y, P[1] + H), x)]:
+                for tn in solve(Eq(FX, 0), self.t):  # tn의 범위: 겹치는 한 부위의 t 범위
+                    tn_range = findMinMax2(tn, (W, H), defined_time_range,
+                                           (((-w1 - w2) * 0.5, (w1 + w2) * 0.5), ((-h1 - h2) * 0.5, (h1 + h2) * 0.5)))
+                    if tn_range != (None, None):
+                        t_range.append(tn_range)
+
+        return t_range
