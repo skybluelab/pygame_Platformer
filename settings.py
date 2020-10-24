@@ -4,7 +4,7 @@ WIDTH = 1280
 HEIGHT = 540
 FPS = 60
 
-#Player properties
+# Player properties
 PLAYER_ACC = 0.5
 PLAYER_VEL = 4.2
 PLAYER_FRICTION = -0.12
