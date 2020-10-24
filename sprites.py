@@ -268,12 +268,14 @@ class EnemyGenerator:
         self.player = PlayerSimulation
         self.t = PlayerSimulation.t
 
-        self.enemies = {"Laser": []}
+        self.enemies = {"Laser": [], "Blade": []}
 
     def set_all(self):
         generated = []
         for x in self.enemies["Laser"]:
             generated.append(Laser(*x))
+        for x in self.enemies["Blade"]:
+            generated.append(Blade(*x))
 
         return generated
 
