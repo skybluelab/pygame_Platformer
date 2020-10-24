@@ -296,6 +296,7 @@ class EnemyGenerator:
                 max = 240 - r[0]
                 enemy_colliding_t_range.append((min, max))
         enemy_colliding_t_range = cyclifyRange(enemy_colliding_t_range, 240)
+        print(enemy_colliding_t_range)
 
         enemy_notColliding_t_range = []
         a = 0
@@ -305,6 +306,7 @@ class EnemyGenerator:
             a = r[1]
         b = cycle
         enemy_notColliding_t_range.append((a, b))
+        print(enemy_notColliding_t_range)
 
         self.enemies["Laser"].append([pos, angle, randomRange(enemy_notColliding_t_range)])
 

@@ -122,6 +122,7 @@ while g.running:
     #test enemy
     enemyGenerator.generate_Laser((WIDTH / 2 - 30, HEIGHT / 2), 72)
     ENEMY_LIST = enemyGenerator.set_all()
+    print(enemyGenerator.enemies["Laser"])
 
     g.new()
 
