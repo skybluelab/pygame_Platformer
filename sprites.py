@@ -2,6 +2,9 @@
 import pygame as pg
 from sympy import *
 from settings import *
+from mathFunctions import *
+from enemies import *
+
 vec = pg.math.Vector2
 
 class Player(pg.sprite.Sprite):
@@ -265,29 +268,47 @@ class EnemyGenerator:
         self.player = PlayerSimulation
         self.t = PlayerSimulation.t
 
-    def minmax(self, func, arg):# 단변수 함수의 최대
-        dy = diff(func)
-        sol = solve(Eq(dy, 0), arg)
-        arr = [func.subs(arg, s) for s in sol]
-        if arr == []:
-            return ()
-        return (min(arr), max(arr))
+        self.enemies = {"Laser": []}
+
+    def set_all(self):
+        generated = []
+        for x in self.enemies["Laser"]:
+            generated.append(Laser(*x))
+
+        return generated
 
     def generate_Blade(self):
         pass
 
-    def generate_Laser(self):
-        pos = vec(WIDTH/2, HEIGHT/2)
-        angle = 135
-        x, y = symbols("x y", real=True)
-        wh =  (10 / abs(math.sin(math.radians(angle))), 10 / abs(math.cos(math.radians(angle))))
-        E = Eq(y-pos.y, math.tan(math.radians(angle))*(x-pos.x)) # 장애물의 모양함수
+    def generate_Laser(self, pos, angle):
+        pos = vec(*pos)
+        fixed_angle = 180 - angle
+        x, y, t = symbols("x y t", real=True)
+        wh = (25 / abs(math.sin(math.radians(fixed_angle))) / 2, 25 / abs(math.cos(math.radians(fixed_angle))) / 2)
+        cycle = 240
+        E = Eq(y - pos.y, math.tan(math.radians(fixed_angle)) * (x - pos.x))  # 장애물의 모양함수
 
-        collidingTime = self.get_collidingTimeRangeOfPlayer(E, wh, (x, y))
+        playerCollidingTime = self.get_collidingTimeRangeOfPlayer(E, wh, (x, y))
+        enemy_colliding_t_range = []
+        for r in playerCollidingTime:
+            if r[0] != r[1]:
+                min = 180 - r[1]
+                max = 240 - r[0]
+                enemy_colliding_t_range.append((min, max))
+        enemy_colliding_t_range = cyclifyRange(enemy_colliding_t_range, 240)
+        print(enemy_colliding_t_range)
 
+        enemy_notColliding_t_range = []
+        a = 0
+        for r in enemy_colliding_t_range:
+            b = r[0]
+            enemy_notColliding_t_range.append((a, b))
+            a = r[1]
+        b = cycle
+        enemy_notColliding_t_range.append((a, b))
+        print(enemy_notColliding_t_range)
 
-
-
+        self.enemies["Laser"].append([pos, angle, randomRange(enemy_notColliding_t_range)])
 
     def get_collidingTimeRangeOfPlayer(self, enemy_movingShape, enemy_wh, enemy_symbol_xy):
         x, y = enemy_symbol_xy
@@ -297,9 +318,9 @@ class EnemyGenerator:
 
         player_time_list = self.player.time_list
 
-        t_range= []
+        t_range = []
 
-        E = enemy_movingShape # 장애물의 모양함수
+        E = enemy_movingShape  # 장애물의 모양함수
         for index in range(0, len(player_time_list) - 1):
             time = player_time_list[index]
             defined_time_range = (player_time_list[index], player_time_list[index + 1])
@@ -313,3 +334,27 @@ class EnemyGenerator:
                         t_range.append(tn_range)
 
         return t_range
+
+    def get_collidingTimeRangeOfEnemy(self, enemy_positionFunction, enemy_wh, enemy_symbol_t):
+        t = enemy_symbol_t
+        W, H = symbols("W H")
+        w1, h1 = self.player.rect.width, self.player.rect.height
+        w2, h2 = enemy_wh
+
+        player_time_list = self.player.time_list
+
+        t_range = []
+
+        E = enemy_positionFunction # 적의 좌표함수
+        for index in range(0, len(player_time_list) - 1):
+            time = player_time_list[index]
+            defined_time_range = (player_time_list[index], player_time_list[index + 1])
+            P = self.player.get_positionFunction(time)  # player의 좌표함수
+
+            for FX in [P[0].subs(self.t, sol) - E[0] - W for sol in solve(Eq(P[1], E[1]+H), self.t)]:
+                for tn in solve(Eq(FX, 0), self.t):  # tn의 범위: 겹치는 한 부위의 t 범위
+                    tn_range = findMinMax2(tn, (W, H), defined_time_range,
+                                           (((-w1 - w2) * 0.5, (w1 + w2) * 0.5), ((-h1 - h2) * 0.5, (h1 + h2) * 0.5)))
+                    if tn_range != (None, None):
+                        t_range.append(tn_range)
+        print(t_range)

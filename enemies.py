@@ -61,9 +61,9 @@ class Laser(pg.sprite.Sprite):
         self.original_image = self.image
         self.rect = self.image.get_rect()
         if angle == 90:
-            self.image = pg.transform.scale(self.image, (int(HEIGHT*1.25), int(self.rect.height * 0.125)))
+            self.image = pg.transform.scale(self.image, (int(HEIGHT*1.25), 25))
         else:
-            self.image = pg.transform.scale(self.image, (int(abs(HEIGHT/math.sin(math.radians(angle)))*1.25), int(self.rect.height * 0.125)))
+            self.image = pg.transform.scale(self.image, (int(abs(HEIGHT/math.sin(math.radians(angle)))*1.3), 25))
         self.track_image = pg.transform.rotate(pg.transform.scale(self.image, (WIDTH, 4)), self.angle)
         self.image = pg.transform.rotate(self.image, angle)
         self.original_image = self.image
@@ -79,7 +79,6 @@ class Laser(pg.sprite.Sprite):
         self.activate = False
 
     def update(self):
-        self.t += 1
         if self.t >= 240:
             self.show = False
             self.activate = False
@@ -95,3 +94,4 @@ class Laser(pg.sprite.Sprite):
             self.image = self.track_image
             self.rect = self.track_rect
 
+        self.t += 1

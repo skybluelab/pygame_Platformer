@@ -25,46 +25,27 @@ class Game:
         self.death_sound = pg.mixer.Sound("Audio/die.wav")
 
     def new(self):
+        global playerSimulation
+
         # start a new game
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
-        self.music = pg.mixer.music.load('Audio/music.wav')  #Bgm 추가
-        self.music = pg.mixer.music.play(-1)
-
         self.player = Player(self)
         self.all_sprites.add(self.player)
 
-        self.playerSimulation = PlayerSimulation((20, HEIGHT - 100), pg.rect.Rect(20, HEIGHT - 100, 32, 32))
-        self.all_sprites.add(self.playerSimulation)
-        self.playerSimulation.updateMotionScript(
-            {0: ((0, PLAYER_GRAVITY), (0, 0)),
-             10.7: ((0, 0), (0, 'break')),
-             11: ((0, 0), (PLAYER_VEL, 0)),
-             120: ((0, 0), ('break', 0)),
-             130: ((0, PLAYER_GRAVITY), (PLAYER_VEL, -PLAYER_JUMPPOWER)),
-             167.5: ((0, 0), (-PLAYER_VEL, 'break')),
-             200: ((0, 0), (PLAYER_VEL, 0)),
-             380: ((0, 0), ('break', 'break'))})
-        self.playerSimulation.time = 0
-        self.playerSimulation.play = True
+        self.all_sprites.add(playerSimulation)
+        playerSimulation.time = 1
+        playerSimulation.play = True
 
         for plat in PLATFORM_LIST:
             p = Platform(*plat)
             self.all_sprites.add(p)
             self.platforms.add(p)
 
-        #test Enemy
-        e = Blade((300, 420))
-        self.all_sprites.add(e)
-        self.enemies.add(e)
-        e = Laser((WIDTH/2, HEIGHT/2), 135, 220)
-        self.all_sprites.add(e)
-        self.enemies.add(e)
-        e = Thorn((480,500))
-        self.all_sprites.add(e)
-        self.enemies.add(e)
+        self.all_sprites.add(*ENEMY_LIST)
+        self.enemies.add(*ENEMY_LIST)
 
         self.run()
 
@@ -124,7 +105,25 @@ class Game:
         pg.display.flip()
 
 g = Game()
+
+playerSimulation = PlayerSimulation((20, HEIGHT - 100), pg.rect.Rect(20, HEIGHT - 100, 32, 32))
+enemyGenerator = EnemyGenerator(playerSimulation)
+
 while g.running:
+    playerSimulation.updateMotionScript(
+        {0: ((0, PLAYER_GRAVITY), (0, 0)),
+         10.7: ((0, 0), (0, 'break')),
+         11: ((0, 0), (PLAYER_VEL, 0)),
+         120: ((0, 0), ('break', 0)),
+         130: ((0, PLAYER_GRAVITY), (PLAYER_VEL, -PLAYER_JUMPPOWER)),
+         167.5: ((0, 0), (-PLAYER_VEL, 'break')),
+         200: ((0, 0), (PLAYER_VEL, 0)),
+         380: ((0, 0), ('break', 'break'))})
+    #test enemy
+    enemyGenerator.generate_Laser((WIDTH / 2 - 30, HEIGHT / 2), 72)
+    ENEMY_LIST = enemyGenerator.set_all()
+    print(enemyGenerator.enemies["Laser"])
+
     g.new()
 
 pg.quit()
