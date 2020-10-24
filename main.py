@@ -123,6 +123,6 @@ while g.running:
     enemyGenerator.generate_Laser((WIDTH / 2 - 30, HEIGHT / 2), 72)
     ENEMY_LIST = enemyGenerator.set_all()
 
-    g.new()
+    g.new()#new
 
 pg.quit()
